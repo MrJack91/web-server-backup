@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source config.sh
+source ~/web-server-backup.conf
 
 # Announce the backup time
 echo "Backup Started: $(date)"
