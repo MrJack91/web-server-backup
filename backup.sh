@@ -69,7 +69,7 @@ if [ "$TAR_SITES" == "true" ]
   cd $SITES_DIR
 
   echo "Archiving $SITES_DIR..."
-  $TAR_PATH -X ~/web-sever-backup-exclude.conf -C $SITES_DIR -czf $SITES_BACKUP_DIR/$THE_DATE.tgz .
+  $TAR_PATH -X ~/web-server-backup-exclude.conf -C $SITES_DIR -czf $SITES_BACKUP_DIR/$THE_DATE.tgz .
 
   #every folder in seperate folder
   #for d in *
