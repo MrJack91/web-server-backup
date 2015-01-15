@@ -26,29 +26,29 @@ if [ "$DUMP_MYSQL" = "true" ]
   echo "------------------------------------"
   if [ $MYSQL_DATABASE ]
     then
-        db=$MYSQL_DATABASE
+    db=$MYSQL_DATABASE
+    echo "Dumping: $db..."
+    if [ -z  "$MYSQL_PASS" ]
+      then
+      $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
+    else
+      $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
+    fi
+  else
+    DBS="$($MYSQL_PATH -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS -Bse 'show databases')"
+    for db in $DBS
+    do
+      if [[ $db != "information_schema" && $db != "mysql" && $db != "performance_schema" ]]
+        then
         echo "Dumping: $db..."
         if [ -z  "$MYSQL_PASS" ]
-            then
-                $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
-            else
-                $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
+          then
+          $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
+        else
+          $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
         fi
-    else
-        DBS="$($MYSQL_PATH -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS -Bse 'show databases')"
-        for db in $DBS
-        do
-            if [[ $db != "information_schema" && $db != "mysql" && $db != "performance_schema" ]]
-            then
-            echo "Dumping: $db..."
-            if [ -z  "$MYSQL_PASS" ]
-                then
-                    $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
-                else
-                    $MYSQLDUMP_PATH --opt --skip-add-locks -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS $db | gzip > $MYSQL_BACKUP_DIR$db\_$THE_DATE.sql.gz
-            fi
-            fi
-        done
+      fi
+    done
   fi
 
   # Delete old dumps
@@ -67,11 +67,16 @@ if [ "$TAR_SITES" == "true" ]
   # Get a list of files in the sites directory and tar them one by one
   echo "------------------------------------"
   cd $SITES_DIR
-  for d in *
-  do
-    echo "Archiving $d..."
-    $TAR_PATH --exclude="*/log" -C $SITES_DIR -czf $SITES_BACKUP_DIR/$d\_$THE_DATE.tgz $d
-  done
+
+  echo "Archiving $SITES_DIR..."
+  $TAR_PATH --exclude=$SITES_EXCLUDES -C $SITES_DIR -czf $SITES_BACKUP_DIR/$THE_DATE.tgz .
+
+  #every folder in seperate folder
+  #for d in *
+  #do
+  #  echo "Archiving $d..."
+  #  $TAR_PATH --exclude="*/log" -C $SITES_DIR -czf $SITES_BACKUP_DIR/$d\_$THE_DATE.tgz $d
+  #done
 
   # Delete old site backups
   echo "------------------------------------"
@@ -90,7 +95,7 @@ if [[ "$SYNC" == "rsync" ]]
   echo "Sending backups to backup server..."
   $RSYNC_PATH --del -vaze "ssh -p $RSYNC_PORT" $BACKUP_DIR/ $RSYNC_USER@$RSYNC_SERVER:$RSYNC_DIR
 
-# OR s3sync everything with Amazon S3
+  # OR s3sync everything with Amazon S3
 elif [[ "$SYNC" == "s3sync" ]]
   then
   export AWS_ACCESS_KEY_ID
@@ -100,7 +105,7 @@ elif [[ "$SYNC" == "s3sync" ]]
   if [[ $USE_SSL == "true" ]]
     then
     SSL_OPTION=' --ssl '
-    else
+  else
     SSL_OPTION=''
   fi
   echo "------------------------------------"
