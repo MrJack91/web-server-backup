@@ -1,3 +1,4 @@
 .DS_Store
 .idea
+config.sh
 config_*.sh
