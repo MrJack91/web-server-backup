@@ -1,4 +1,20 @@
-# Web Server Backup Script (now with S3 sync)
+# Changes
+
+I found this script and have made this changes:
+* save the whole dir in one archive
+* localize configuration file from user/home dir (so you can pull this project without losing your configuration, and you can start the script from every directory)
+* activate supporting of a exlude file with patter by backing up the directory
+
+## History
+This solution was created by postpostmodern.
+https://github.com/postpostmodern/web-server-backup
+
+Then weckbach did some changes with outsourcing of the configuration file.
+https://github.com/weckbach/web-server-backup/
+
+
+# More Info
+## Web Server Backup Script (now with S3 sync)
 
 This is a bash script for backing up multiple web sites and MySQL databases into a specified backups directory. It's a good idea to run it every night via cron.
 
@@ -12,24 +28,23 @@ Once configured (variables set within the script), it does this:
 * Deletes site archives older than a specified number of days from the backup directory
 * Optionally syncs all backup files to Amazon S3 or a remote server, using s3sync.rb or rsync respectively
 
-# BETA WARNING
+## BETA WARNING
 
 ___This script works fine for me (using Ubuntu 8.04 on Slicehost), but servers vary greatly. USE THIS SCRIPT AT YOUR OWN RISK!! There is always risk involved with running a script. I AM NOT RESPONSIBLE FOR DAMAGE CAUSED BY THIS SCRIPT.___
 
 You may very well know more about bash scripting and archiving than I do. If you find any flaws with this script or have any recommendations as to how this script can be improved, please fork it and send me a pull request.
 
-# Installation
+## Installation
 
-* __MOST IMPORTANTLY:__ Open the backup.sh file in a text editor and set the configuration variables at the top (see below).
-* Optionally, edit the tar command on line 91 to add some more --exclude options (e.g. --exclude="cache/*")
+* __MOST IMPORTANTLY:__ copy&edit the configuration templates from _config/_ to your user home dir.
 * Place the backup.sh file somewhere on your server (something like /usr/local/web-server-backup).
 * Make sure the backup.sh script is owned by root: `sudo chown -R 0:0 /usr/local/web-server-backup`
 * Make sure the backup.sh script is executable by root: `sudo chmod 744 /usr/local/web-server-backup/backup.sh`
 * Set up your Amazon S3 account and bucket (or a remote account for rsync)
 * Set up s3sync (see below)
 * Preferably set up cron to run it every night (see below).
-    
-# Configuration
+
+## Configuration
 
 There are a bunch of variables that you can set to customize the way the script works. _Some of them __must__ be set before running the script!_
 
@@ -77,7 +92,7 @@ The only thing tricky about getting s3sync.rb installed is the CA certificates. 
 
 ## Date format: (change if you want)
 
-* __THE\_DATE__: The date that will be appended to filenames. It's preset to: `"$(date '+%Y-%m-%d')"`
+* __THE\_DATE__: The date that will be appended to filenames. It's preset to: `$(date '+%Y-%m-%d-%H-%M-%S')`
 
 ## Paths to commands: (probably won't need to change these)
 
@@ -87,7 +102,7 @@ The only thing tricky about getting s3sync.rb installed is the CA certificates. 
 * __TAR\_PATH__: Path to tar. It's preset to: `"$(which tar)"`
 * __RSYNC\_PATH__: Path to rsync. It's preset to: `"$(which rsync)"`
 
-# Running with cron (recommended)
+## Running with cron (recommended)
 
 Once you've tested the script, I recommend setting it up to be run every night with cron. Here's a sample cron config:
 
@@ -97,7 +112,7 @@ Once you've tested the script, I recommend setting it up to be run every night w
     HOME=/root
 
     30 4 * * * root /usr/local/web-server-backup/backup.sh
-    
+
 That'll run the script (located in /usr/local) at 4:30 every morning and email the output to jason@example.com.
 
 If you want to only receive emails about errors, you can use:
@@ -105,3 +120,7 @@ If you want to only receive emails about errors, you can use:
     30 4 * * * root /usr/local/web-server-backup/backup.sh > /dev/null
 
 So, take the above example, change the email address, etc., save it to a text file, and place it in `/etc/cron.d/`. That should do it.
+
+__Or__ you can run the script with:
+
+    bash /usr/local/web-server-backup/backup.sh
