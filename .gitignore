@@ -1,4 +1,3 @@
 .DS_Store
 .idea
-config.sh
-config_*.sh
+config/web-server-backup_*.conf
